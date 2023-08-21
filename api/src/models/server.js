@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import session from "express-session";
 import { PORT, SECRET_KEY } from "../common";
 import db from '../database';
+import { registerModels } from '../database/db-helpers';
 
 class Server {
 
@@ -25,10 +26,22 @@ class Server {
     async dbConnection() {
         try {
             await db.authenticate();
+            await this.validateTables();
             console.log('database connected');
         } catch (error) {
-            console.log("Couln't connect to database");
+            console.log("there was an error: ", error);
         }
+    }
+
+    async syncModels(force = false, alter = false) {
+        const options = { force, alter };
+        await db.sync(options);
+        console.log('All tables were synced :)');
+    }
+
+    async validateTables() {
+        registerModels();
+        await this.syncModels();
     }
 
     middlewares() {
