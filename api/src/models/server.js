@@ -12,11 +12,23 @@ class Server {
         this.app = express();
         this.port = PORT;
 
+        // database connection
+        this.dbConnection();
+
         // Middlewares
         this.middlewares();
 
         // routes
         this.routes();
+    }
+
+    async dbConnection() {
+        try {
+            await db.authenticate();
+            console.log('database connected');
+        } catch (error) {
+            console.log("Couln't connect to database");
+        }
     }
 
     middlewares() {
