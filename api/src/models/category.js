@@ -1,9 +1,8 @@
-import { STATUS_VALUES, modelNames } from '@server/common';
 import { DataTypes } from 'sequelize';
-import { handleValidateDBError } from '../utils';
+import { STATUS_VALUES, MODEL } from '../common';
 
 export default (sequelize) => sequelize.define(
-    modelNames.Category,
+    MODEL.Category,
     {
         id: {
             type: DataTypes.UUID,

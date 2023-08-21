@@ -1,16 +1,13 @@
+// values for model status
 export const STATUS_VALUES = Object.freeze({
-    ACTIVE: 1,
-    DELETED: 3,
-    DISABLED: 2,
-  });
-  
-export const modelNames = Object.freeze({
-    User: 'users',
-    Role: 'roles',
-    Order: 'orders',
-    Client: 'clients',
-    Product: 'products',
-    Employee: 'employees',
-    OrderRow: 'orderRows',
-    Category: 'categories',
-  });
+  ACTIVE: 1,
+  DISABLED: 2,
+  DELETED: 3,
+});
+
+/* A model object that will contain the name of every model in the database, with the following structure:
+key (name for us to identify in code) : value (name that the table will have in the database)
+*/
+export const MODEL = Object.freeze({
+  Category: 'categories',
+});

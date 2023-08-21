@@ -367,8 +367,128 @@ Congrats! We are now connected to our database!
 ![connected-to-database](public/images/connected-to-database.png)
 
 ___
-##### Commit and push this changes
+##### Commit and push this changes, and create the PR
 ```bash
 git add . && git commit -am "connecting to database" && git push origin
+```
+___
+
+#### 8. Finally, let's create the very first database model
+
+Since we'll handle different registers in the database, as engineers we should think for possible missing things in the requirements. What happen if our client want to delete a user, or a category but it already has relationships to other tables? it would brake our system. So let's first create some `status` and `models` values in `src/common/db-values.js`:
+```javascript
+// values for model status
+export const STATUS_VALUES = Object.freeze({
+  ACTIVE: 1,
+  DISABLED: 2,
+  DELETED: 3,
+});
+
+/* A model object that will contain the name of every model in the database, with the following structure:
+key (name for us to identify in code) : value (name that the table will have in the database)
+*/
+export const MODEL = Object.freeze({
+  Category: 'categories',
+});
+```
+
+Now create a new file under `models` to add our first `category` model
+```javascript
+import { STATUS_VALUES, modelNames } from '../common';
+import { DataTypes } from 'sequelize';
+import { handleValidateDBError } from '../utils';
+
+export default (sequelize) => sequelize.define(
+    modelNames.Category,
+    {
+        id: {
+            type: DataTypes.UUID,
+            primaryKey: true,
+            allowNull: false,
+            unique: true,
+            defaultValue: DataTypes.UUIDV4
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+        },
+        status: {
+            type: DataTypes.TINYINT,
+            allowNull: false,
+            defaultValue: STATUS_VALUES.ACTIVE,
+            validate: {
+                isIn: {
+                    args: [[STATUS_VALUES.ACTIVE, STATUS_VALUES.DELETED, STATUS_VALUES.DISABLED]],
+                    msg: 'Invalid status value provided',
+                },
+            },
+        },
+    }
+);
+```
+
+Now we need to register our new model in sequelize, but how? Creating a helper function that will register our models for us, create a new file in `database/db-helpers.js`:
+```javascript
+import db from '.';
+import categoryModel from '../models/category';
+
+let models;
+
+export const registerModels = () => {
+    models = {
+        Category: categoryModel(db),
+    };
+};
+
+```
+
+Now we need to run that function, but where? Yes! In our Server class, add a new `validateTables()` method and add it to the `dbConnection()` method:
+```javascript
+async validateTables() {
+    registerModels();
+}
+```
+```javascript
+async dbConnection() {
+    try {
+      await db.authenticate();
+      await this.validateTables(); // <-- here is it, after the auth
+      console.log('database connected');
+    } catch (error) {
+      console.log("there was an error: ", error);
+    }
+}
+```
+
+Now, we need to create our new table with the actual database, in the previous step we *ONLY* registered the model in the sequelize global object of our project, but it hasn't been added to the database. `Sequelize` provides a method to sync our models with the database:
+```javascript
+async syncModels(force = false, alter = false) {
+    const options = { force, alter }; // force: delete if table exists, alter: alter current table structure, for example, if a new property has been added
+    await db.sync(options); // <-- this is the method
+    console.log('All tables were synced :)');
+}
+```
+
+Finally, just add this `syncModels()` to the `validateTables()`:
+```javascript
+async validateTables() {
+  registerModels();
+  await this.syncModels(); // <-- here is it, after register the models of course
+}
+```
+
+If everything goes well, we'll see the `console.log` from `syncModels()`:
+
+![all-tables-were-synced](public/images/all-tables-were-synced.png)
+
+if you want to fully make sure of this, go and check the database in Table Plus:
+
+![category-table-added-to-database](public/images/category-table-added-to-database.png)
+
+___
+##### Commit and push this changes, and create the PR
+```bash
+git add . && git commit -am "create database model for categories" && git push origin
 ```
 ___
