@@ -1,4 +1,5 @@
 # Clothing Boutique System
+
 ### [Ing. Israel Santiago](https://israelsantiago.com)
 
 Project for the subject "Development and implementation of information systems". This is the demo repository that will be used as a guide for the development during the semester.
@@ -6,6 +7,7 @@ Project for the subject "Development and implementation of information systems".
 ### Technical requirements:
 
 ##### Required:
+
 - [MySQL Community Server](https://dev.mysql.com/downloads/)
 - [Node@18.17.1](https://nodejs.org/en)
 - [Postman](https://www.postman.com/downloads/)
@@ -13,11 +15,15 @@ Project for the subject "Development and implementation of information systems".
 - [ngrok](https://ngrok.com/download): Allow us to open our ports, so other folks can reach our localhost no matter where they are. Useful for teamwork.
 
 ##### Optional:
+
 - [VS Code](https://code.visualstudio.com/download)
 - [Table Plus](https://tableplus.com)
-___
+- [Github Desktop](https://desktop.github.com)
+
+---
 
 ##### Shortcuts:
+
 Through the course you will see me running some shortcuts in terminal to perform some actions more quickly, here are some of them, feel free to copy them and add your owns in your terminal:
 
 1. First open your bash profile (may change depending what are you using), in this case I'm using `zshrc`

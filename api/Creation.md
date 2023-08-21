@@ -153,4 +153,222 @@ pnpm run dev
 
 ![basic server response](public/images/basic-server-response.png)
 
-#### 6. Commit and push this changes
+___
+##### Commit and push this changes
+```bash
+git add . && git commit -am "basic nodejs server running" && git push origin
+```
+___
+#### 6. Implement our first class to handle all the Server logic
+
+Let's implement our first class, create a new file in `models/server.js`
+
+```javascript
+import express from "express";
+import morgan from "morgan";
+import cors from "cors";
+import bodyParser from "body-parser";
+import session from "express-session";
+import { PORT, SECRET_KEY } from "../common";
+
+class Server {
+
+    constructor() {
+        this.app = express();
+        this.port = PORT;
+
+        // Middlewares
+        this.middlewares();
+
+        // routes
+        this.routes();
+    }
+
+    middlewares() {
+        this.app.use(morgan("dev"));
+        this.app.use(bodyParser.json());
+        this.app.use(bodyParser.urlencoded({ extended: true }));
+        this.app.use(session({ secret: SECRET_KEY, resave: true, saveUninitialized: true }));
+        this.app.use(cors({ origin: "*" }));
+    }
+
+    routes() {
+        this.app.get("/", (req, res) => {
+            res.status(200).json({
+                message: `Welcome to Clothing Boutique\n
+              Developed by: Israel Santiago`,
+            });
+        });
+    }
+
+    listen() {
+        this.app.listen(this.port, () => {
+            console.log(`listening on PORT ${this.port}`);
+        });
+    }
+}
+
+export default Server;
+```
+
+Then go to our main `src/index.js` and let's call our new class here:
+```javascript
+import "dotenv/config.js";
+import Server from './models/server';
+
+const server = new Server();
+
+server.listen();
+```
+
+To avoid people access to our main route (for security reasons), let's create a static html page.
+Create a new file in `public/index.html` and add a basic html template
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied</title>
+</head>
+<body>
+    <h1>Access denied</h1>
+</body>
+</html>
+```
+
+Then in our Server class, inside the middlewares method, add a new one
+
+```javascript
+this.app.use(express.static('public'));
+```
+
+This will replace our main route `localhost:8000/`, now when you reload the page, will see this html page:
+
+![Access denied](public/images/access-denied.png)
+
+Now we can add another route to our routes method:
+
+```javascript
+this.app.get("/api", (req, res) => {
+  res.status(200).json({
+    message: `Welcome to Clothing Boutique API Developed by: Israel Santiago`,
+    });
+});
+```
+
+Now we have our server in a separated file, much better!
+
+___
+##### Commit and push this changes
+```bash
+git add . && git commit -am "adding first class to handle server logic" && git push origin
+```
+___
+
+#### 7. Let's connect to our database
+
+To do this, we need first to [run the MySQL Server](https://www.tutorialspoint.com/starting-and-stopping-mysql-server)
+
+For Mac / Linux
+```bash
+sudo service mysqld start
+```
+Here's the easiest way (this is the one I do):
+1. Go to system preferences on your mac and scroll down to the bottom
+
+![MySQL Server](public/images/start-mysql-mac.png)
+
+RUNNING:
+
+![MySQL running](public/images/mysql-running.png)
+
+For Windows [follow this instructions](https://www.tutorialspoint.com/starting-and-stopping-mysql-server)
+```bash
+C:\> "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqld"
+```
+
+Now that we have our MySQL Server running, let's create our first connection, open [Table Plus](https://tableplus.com) 
+
+1. Create a new connection:
+
+![create-new-connection-01](public/images/create-new-connection-01.png)
+
+![create-new-connection-02](public/images/create-new-connection-02.png)
+
+![create-new-connection-03](public/images/create-new-connection-03.png)
+
+2. Create and connect to a new database
+
+![create-new-connection-04](public/images/create-new-connection-04.png)
+
+![create-new-connection-05](public/images/create-new-connection-05.png)
+
+![create-new-connection-06](public/images/create-new-connection-06.png)
+
+Now we have our database ready, let's communicate our project with the database.
+
+First, add our database parameters to our `.env` file
+```env
+# database
+DB_HOST=localhost
+DB_USER=root
+DB_NAME=clothing_boutique
+DB_PASSWORD=your_password
+```
+
+> **_NOTE:_** Don't forget to pull the server down and then run it up again
+
+In our `src/database/index.js` we'll create our db configuration
+
+```javascript
+import Sequelize from 'sequelize';
+
+const db_host = process.env.DB_HOST || '';
+const db_name = process.env.DB_NAME || '';
+const db_password = process.env.DB_PASSWORD || '';
+const db_user = process.env.DB_USER || '';
+
+const db = new Sequelize(db_name, db_user, db_password, {
+    host: db_host,
+    dialect: 'mysql',
+});
+
+export default db;
+```
+
+In our `Server` class, let's create a new method that will try to make a connection to our database, if success will show a message, if error also will show a message to advise us about the error
+
+```javascript
+async dbConnection() {
+       try {
+           await db.authenticate();
+           console.log('database connected');
+       } catch (error) {
+           console.log("Couln't connect to database");
+       }
+   }
+```
+
+and add it to the constructor
+```javascript
+constructor() {
+      this.app = express();
+      this.port = PORT;
+
+      // database connection
+      this.dbConnection();
+      ...
+  }
+```
+
+Congrats! We are now connected to our database!
+
+![connected-to-database](public/images/connected-to-database.png)
+
+___
+##### Commit and push this changes
+```bash
+git add . && git commit -am "connecting to database" && git push origin
+```
+___
