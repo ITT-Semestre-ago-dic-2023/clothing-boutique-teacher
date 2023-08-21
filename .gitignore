@@ -1,2 +1,5 @@
+# files and directories that git will ignore
+
 node_modules/
 build/
+*.yaml
